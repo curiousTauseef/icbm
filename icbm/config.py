@@ -8,6 +8,7 @@ VERBOSE = False
 MODULE_PATHS = ["lib", "src"]
 FLAGS_BY_DEFAULT = False
 PROTOBUF_JAVA = "lib=:protobuf-java-2.5.0"
+VALID_TLDS = "com org net javax"
 
 # Avoid having to declare all the variables as global in init.
 config = sys.modules[__name__]
@@ -27,6 +28,8 @@ def init():
     if conf.has_option("java", "flags_by_default"):
         config.FLAGS_BY_DEFAULT = conf.getboolean(
             "java", "flags_by_default")
+    if conf.has_option("java", "valid_tlds"):
+        config.VALID_TLDS = conf.get("java", "valid_tlds")
     if conf.has_option("proto", "protobuf_java"):
         config.PROTOBUF_JAVA = conf.get("proto", "protobuf_java")
 

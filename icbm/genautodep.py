@@ -8,6 +8,10 @@ import threading
 import time
 import zipfile
 
+import config
+
+VALID_TLDS = "|".join(re.escape(x) for x in config.VALID_TLDS.split())
+
 CLEAN_CODE_RE = re.compile(
     r"""(
     /\*.*?\*/ # Matches /* */
@@ -15,12 +19,12 @@ CLEAN_CODE_RE = re.compile(
     //[^\n]* # Matches //
       |
     # Matches a class-looking reference inside of a "-enclosed string literal
-    "(?P<repl>(?:com|org|net|javax)\.[a-zA-Z0-9_\.]*\.[A-Z][A-Za-z0-9_]+)"
+    "(?P<repl>(?:%s)\.[a-zA-Z0-9_\.]*\.[A-Z][A-Za-z0-9_]+)"
       |
     "[^\\"]*(\\.[^\\"]*)*" # Matches a "-enclosed string literal
       |
     '[^\\']*(\\.[^\\']*)*' # Matches a '-enclosed string literal
-    )""", re.M | re.X | re.S)
+    )""" % (VALID_TLDS,), re.M | re.X | re.S)
 
 # Package specification
 PACKAGE_RE = re.compile(r"package (.*);")
@@ -32,7 +36,7 @@ IMPORT_RE = re.compile(r"import(?: static)? (.*);")
 LOCAL_RE = re.compile(r"(?:^|(?!\.).)\b([A-Z]\w+)\b")
 
 # Fully-qualified class reference
-FULL_RE = re.compile(r"(?:^|(?!\.).)\b((?:com|org|net|javax)\.[a-zA-Z0-9_\.]*\.[A-Z][A-Za-z0-9_]+)\b")
+FULL_RE = re.compile(r"(?:^|(?!\.).)\b((?:%s)\.[a-zA-Z0-9_\.]*\.[A-Z][A-Za-z0-9_]+)\b" % (VALID_TLDS,))
 
 # Class reference inside of an import
 IMPORT_PARSE_RE = re.compile(r"\b([A-Z]\w+)\b")
