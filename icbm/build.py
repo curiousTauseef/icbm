@@ -1,12 +1,12 @@
 #!/usr/bin/python2.7
 
-import ConfigParser
 import optparse
 import os
 import re
 import sys
 import time
 
+import config
 import engine
 import data
 import genautodep
@@ -41,33 +41,14 @@ def RegisterJavaLibrary(module, f):
 def main():
     start_time = time.time()
 
-    parser = optparse.OptionParser()
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
-    (options, args) = parser.parse_args()
-    data.VERBOSE = options.verbose
-
-    config = ConfigParser.SafeConfigParser(allow_no_value=True)
-    # Module paths (the options of the modules section) must be case sensitive.
-    config.optionxform = str
-    config.read("icbm.cfg")
-    if config.has_section("modules"):
-        module_paths = [path for path, _ in config.items("modules")]
-    else:
-        module_paths = ["lib", "src"]
-    if config.has_option("java", "flags_by_default"):
-        data.JAVA_BINARY_FLAGS_DEFAULT = config.getboolean(
-            "java", "flags_by_default")
-    if config.has_option("proto", "protobuf_java"):
-        protobuf_java = config.get("proto", "protobuf_java")
-    else:
-        protobuf_java = "lib=:protobuf-java-2.5.0"
+    args = config.ARGS
 
     try:
         os.mkdir(engine.BUILD_DIR)
     except:
         pass
 
-    modules = genautodep.ComputeDependencies(module_paths)
+    modules = genautodep.ComputeDependencies(config.MODULE_PATHS)
 
     for module in modules.itervalues():
         mname = module.name
@@ -109,7 +90,7 @@ def main():
                 RegisterJavaLibrary(module, f)
                 # Autodep doesn't find the dependency on protobufs.
                 data.DataHolder.Get(mname, f.DepName()).deps.append(
-                    protobuf_java)
+                    config.PROTOBUF_JAVA)
 
                 gen = data.Generate(
                     mname, f.path, f.name + "_proto",

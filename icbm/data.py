@@ -5,6 +5,7 @@ import functools
 import os
 import sys
 
+import config
 import engine
 
 def cache(f):
@@ -20,9 +21,6 @@ def cache(f):
         return ret[self]
     return _Wrapper
 
-VERBOSE = True
-JAVA_BINARY_FLAGS_DEFAULT = False
-
 printed = set()
 def pdep(a, b):
     """Interceptor for printing dependency links.
@@ -35,7 +33,7 @@ def pdep(a, b):
         return
     if a == b:
         return
-    if VERBOSE:
+    if config.VERBOSE:
         print "\"%s\" -> \"%s\"" % (a, b)
     printed.add((a, b))
 
@@ -150,7 +148,7 @@ class DataHolder(object):
           deps: List of target names that this rule depends on.
         """
         deps = list(self.Canonicalize(deps))
-        if VERBOSE:
+        if config.VERBOSE:
             print "loading: %s" % str(deps)
         for dep in deps:
             pdep(self.FullName(), dep)
@@ -240,7 +238,7 @@ class JavaBinary(DataHolder):
         DataHolder.__init__(self, module, path, name)
         self.main = main
         self.deps = deps
-        self.flags = flags if flags is not None else JAVA_BINARY_FLAGS_DEFAULT
+        self.flags = flags if flags is not None else config.FLAGS_BY_DEFAULT
         self.premain = premain
 
     @cache
